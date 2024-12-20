@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  client:
+    build: client
+    container_name: client
+    ports:
+      - '8080:8080'
+    environment:
+      - API_URL=http://server:3000/api # Menambahkan environment variable untuk client
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+  server:
+    build: server
+    container_name: server
+    environment:
+      - PORT=3000
+      - BASE_API_URL=api
+      - CLIENT_URL=http://localhost:8080
+      - JWT_SECRET=your_jwt_secret_key # Update JWT_SECRET sesuai kebutuhan
+      - MONGO_URI=mongodb://mongo:27017/mern_ecommerce # MongoDB URL
+    ports:
+      - '3000:3000'
+    command: [
+        'sh',
+        '-c',
+        'npm run seed:db rizqinurgacor88@gmail.com RizqiGacor1221 && npm start'
+      ] # Jalankan seeding dulu baru server start
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    command: mongod --quiet --logpath /dev/null
+    ports:
+      - '27017:27017'
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db # Tambahkan volume agar data MongoDB tetap ada setelah container berhenti
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data: # Deklarasi volume untuk MongoDB
